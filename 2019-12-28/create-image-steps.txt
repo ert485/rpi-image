@@ -1,14 +1,16 @@
 # SUMMARY:
-# update, upgrade, git, vim, ncdu, fzf, tmux, cleanup
+# a lightweight (less than 2GB) set of general use tools
+# update, upgrade, git, vim, ncdu, fzf, tmux, caca-utils, cleanup
 
 sudo apt update
 sudo apt upgrade -y
-sudo apt install -y vim git ncdu fzf, tmux
+sudo apt install -y vim git ncdu fzf tmux caca-utils
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 # create/append all files listed below
+# inside tmux, run tmux-plugins plugin installer (^b^I)
 # cleanup
 sudo apt clean
 sudo rm /etc/ssh/ssh_host*
-
 
 
 #### create or add to these files (boot is in separate partition) ####
@@ -30,33 +32,25 @@ network={
 
 # ~/.bashrc
 if [[ -z "$TMUX" ]]; then
-  tmux a -t init
+  tmux a || tmux
 fi
 alias history="fc -ln 1 | fzf"
+alias tk="tmux list-keys | fzf"
+alias tc="tmux list-commands | fzf"
 
 # ~/.vimrc
 inoremap jk <Esc>
 
-# /etc/systemd/system/tmux.service
-[Unit]
-Description=Tmux on startup
-StartLimitIntervalSec=0
-[Service]
-Type=simple
-Restart=always
-RestartSec=10
-User=pi
-ExecStart=/bin/bash /etc/systemd/system/tmux.bash
-[Install]
-WantedBy=multi-user.target
-
-# /etc/systemd/system/tmux.bash
-#!/bin/bash
-tmux start-server
-tmux new -d -s vim
-tmux send-keys -t vim.0 "vim" ENTER
-tmux new -d -s init
-while :; do sleep 2073600; done
+# ~/.tmux.conf
+# List of plugins
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @continuum-boot 'on'
+set -g @continuum-restore 'on'
+# Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
+run -b '~/.tmux/plugins/tpm/tpm'
 
 # /etc/rc.local
-ssh-keygen -A 
+ssh-keygen -A
