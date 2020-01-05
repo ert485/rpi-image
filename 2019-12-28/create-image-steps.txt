@@ -1,60 +1,62 @@
 # SUMMARY:
-# update, ffmpeg, golang, vim-go plugin, capture (timelapse project), neovim, neovim coc plugin (autocompletion), cleanup
+# update, upgrade, git, vim, ncdu, fzf, tmux, cleanup
 
-# update and get base packages
 sudo apt update
 sudo apt upgrade -y
-sudo apt install -y vim git cmake libtool-bin ncdu
-# get ffmpeg (it's a big one)
-sudo apt install -y ffmpeg
-# get recent version of go (update with most recent version of armv6) (make sure subdir go isn't used)
-wget https://dl.google.com/go/go1.13.5.linux-armv6l.tar.gz
-tar xvf go1.13.5.linux-armv6l.tar.gz
-sudo mv go /usr/local/
-# append go binaries to path
-echo "PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile 
-. $HOME/.profile
-# get vim golang plugin
-git clone https://github.com/fatih/vim-go.git ~/.vim/pack/plugins/start/vim-go
-vim +GoInstallBinaries # dec2019 note - delve will fail, no build for arm yet
-# enable camera, reboot
-sudo raspi-config
+sudo apt install -y vim git ncdu fzf, tmux
+# create/append all files listed below
+# cleanup
+sudo apt clean
+sudo rm /etc/ssh/ssh_host*
 
-# get capture project and dependencies
-go get github.com/ert485/capture
-ln -s go/src/github.com/ert485/capture
-cd capture
-go get -t ./...
-pi/build.bash
-server/build.bash
-ui/build.bash
-services/install-services.bash
-sudo systemctl start capture-ui
-sudo systemctl start capture
-sudo systemctl start capture-server
 
-# for neovim and coc plugin
-# http://octetz.com/docs/2019/2019-04-24-vim-as-a-go-ide/
-# https://github.com/neoclide/coc.nvim/wiki/Install-coc.nvim
-sudo apt-get install ninja-build gettext libtool libtool-bin autoconf automake cmake g++ pkg-config unzip
-# yarn steps - might not be necessary for release branch
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-sudo apt update
-sudo apt install yarn
-git clone https://github.com/neovim/neovim.git
-cd neovim
-make CMAKE_BUILD_TYPE=RelWithDebInfo
-sudo make install
-alias vim=nvim
-cd ~; rm -rf neovim
-# update config (see links at start of section)
-vim ~/.config/nvim/init.vim
-vim +PlugInstall
-# add go to coc languages (see links at start of section)
-vim +CocConfig
 
-# Cleanup
-clear /tmp files, anything unnecessary, apt clean
-Add ssh-keygen -A to /etc/rc.local (for next step to work)
-Delete /etc/ssh/ssh_host* files (so that all devices have different identities)
+#### create or add to these files (boot is in separate partition) ####
+
+# boot/ssh
+
+# boot/wpa_supplicant.conf
+country=ca
+update_config=1
+ctrl_interface=/var/run/wpa_supplicant
+network={
+ ssid="The Fast One"
+ psk="IMakeStuff"
+}
+network={
+ ssid="SKTechworksAP"
+ psk="IMakeStuff"
+}
+
+# ~/.bashrc
+if [[ -z "$TMUX" ]]; then
+  tmux a -t init
+fi
+alias history="fc -ln 1 | fzf"
+
+# ~/.vimrc
+inoremap jk <Esc>
+
+# /etc/systemd/system/tmux.service
+[Unit]
+Description=Tmux on startup
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+User=pi
+ExecStart=/bin/bash /etc/systemd/system/tmux.bash
+[Install]
+WantedBy=multi-user.target
+
+# /etc/systemd/system/tmux.bash
+#!/bin/bash
+tmux start-server
+tmux new -d -s vim
+tmux send-keys -t vim.0 "vim" ENTER
+tmux new -d -s init
+while :; do sleep 2073600; done
+
+# /etc/rc.local
+ssh-keygen -A 
