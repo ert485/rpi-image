@@ -34,6 +34,8 @@ network={
 if [[ -z "$TMUX" ]]; then
   tmux a || tmux
 fi
+
+# ~/.bash_aliases
 alias history="fc -ln 1 | fzf"
 alias tk="tmux list-keys | fzf"
 alias tc="tmux list-commands | fzf"
