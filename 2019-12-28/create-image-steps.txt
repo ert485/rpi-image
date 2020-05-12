@@ -1,6 +1,8 @@
 # SUMMARY:
-# a lightweight (less than 2GB) set of general use tools
-# update, upgrade, git, vim, ncdu, fzf, tmux, caca-utils, cleanup
+# update, upgrade, git, vim, ncdu, fzf, tmux, caca-utils,
+# comitup
+# cleanup
+# done
 
 sudo apt update
 sudo apt upgrade -y
@@ -8,6 +10,20 @@ sudo apt install -y vim git ncdu fzf tmux caca-utils
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 # create/append all files listed below
 # inside tmux, run tmux-plugins plugin installer (^b^I)
+
+# comitup:
+# add this line to /etc/apt/sources.list
+#       deb http://davesteele.github.io/comitup/repo comitup main
+wget https://davesteele.github.io/key-366150CE.pub.txt
+sudo apt-key add key-366150CE.pub.txt
+rm key-366150CE.pub.txt
+sudo apt-get update
+sudo apt-get install comitup
+# comment out the last line (source-directory /etc/network/interfaces.d) from /etc/network/interfaces                                                      
+# delete /etc/wpa_supplicant/wpa_supplicant.conf
+sudo systemctl disable systemd-resolved
+
+
 # cleanup
 sudo apt clean
 sudo rm /etc/ssh/ssh_host*
@@ -16,19 +32,6 @@ sudo rm /etc/ssh/ssh_host*
 #### create or add to these files (boot is in separate partition) ####
 
 # boot/ssh
-
-# boot/wpa_supplicant.conf
-country=ca
-update_config=1
-ctrl_interface=/var/run/wpa_supplicant
-network={
- ssid="The Fast One"
- psk="IMakeStuff"
-}
-network={
- ssid="SKTechworksAP"
- psk="IMakeStuff"
-}
 
 # ~/.bashrc
 if [[ -z "$TMUX" ]]; then
